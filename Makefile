@@ -2,6 +2,8 @@
 
 include util.mk
 
+.PHONY: default all build rebuild clean distclean test load libultra
+
 # Default target
 default: all
 
@@ -153,8 +155,9 @@ endif
 # Whether to colorize build messages
 COLOR ?= 1
 
-# display selected options unless 'make clean' or 'make distclean' is run
-ifeq ($(filter clean distclean,$(MAKECMDGOALS)),)
+# display selected options unless 'make clean', 'make distclean', or the top-level
+# 'make rebuild' wrapper is run
+ifeq ($(filter clean distclean rebuild,$(MAKECMDGOALS)),)
   $(info ==== Build Options ====)
   $(info Version:        $(VERSION))
   $(info Microcode:      $(GRUCODE))
@@ -186,7 +189,7 @@ TOOLS_DIR := tools
 
 PYTHON := python3
 
-ifeq ($(filter clean distclean print-%,$(MAKECMDGOALS)),)
+ifeq ($(filter clean distclean print-% rebuild,$(MAKECMDGOALS)),)
 
   # Make sure assets exist
   NOEXTRACT ?= 0
@@ -477,6 +480,12 @@ ifeq ($(COMPARE),1)
 	@$(PRINT) "$(GREEN)Checking if ROM matches.. $(NO_COL)\n"
 	@$(SHA1SUM) --quiet -c $(TARGET).sha1 && $(PRINT) "$(TARGET): $(GREEN)OK$(NO_COL)\n" || ($(PRINT) "$(YELLOW)Building the ROM file has succeeded, but does not match the original ROM.\nThis is expected, and not an error, if you are making modifications.\nTo silence this message, use 'make COMPARE=0.' $(NO_COL)\n" && false)
 endif
+
+build: all
+
+rebuild:
+	$(MAKE) clean
+	$(MAKE) all
 
 clean:
 	$(RM) -r $(BUILD_DIR_BASE)

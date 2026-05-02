@@ -1,8 +1,12 @@
-FROM ubuntu:18.04 as build
+# Ubuntu 18.04's mips binutils package is only available for amd64.
+# Pinning the base image keeps Docker builds working on Apple Silicon via emulation.
+ARG BASE_PLATFORM=linux/amd64
+FROM --platform=${BASE_PLATFORM} ubuntu:18.04 AS build
 
 RUN apt-get update && \
     apt-get install -y \
         binutils-mips-linux-gnu \
+        bsdmainutils \
         build-essential \
         git \
         pkgconf \
